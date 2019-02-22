@@ -1,0 +1,86 @@
+                              check-db-links
+
+                             USAGE INFORMATION
+
+
+  Copyright (C) 2014 Jaromir Hradilek
+
+  This file explains how to use the check-db-links utility to list broken
+  external links in a DocBook XML file. For information on how to install
+  this tool in the system, read the file named INSTALL.
+
+  See the end of this file for copying conditions.
+
+
+TABLE OF CONTENTS
+
+  1. Overview
+  2. Basic Usage
+      2.1. Listing Broken Links
+      2.2. Printing All Links
+      2.3. Processing xi:include Statements
+      2.4. Getting Help
+  3. License
+
+
+1. OVERVIEW
+
+The check-db-links utility reads a DocBook XML file, locates all external links
+and prints a list of those that are no longer functional to standard output. In
+addition, it can be used to print all external links in the selected file
+without checking their status, or configured to perform XInclude processing.
+
+
+2. BASIC USAGE
+
+2.1. Listing Broken Links
+
+To list all broken links in a selected DocBook XML file, type the following
+at a shell prompt:
+
+    check-db-links FILE
+
+
+2.2. Listing All Links
+
+To list all links in a selected DocBook XML file along with their current
+status (PASSED or FAILED), run the following command:
+
+    check-db-links -a FILE
+
+You can also list all links without checking their status. To do so, run the
+check-db-links utility with the -l command-line option as follows:
+
+    check-db-links -l FILE
+
+
+2.3. Processing <xi:include> Statements
+
+To list all broken links in a selected DocBook XML file and all files that
+are included in it using the <xi:include> statement, run:
+
+    check-db-links -i FILE
+
+
+2.4. Getting Help
+
+To print a complete list of available command-line options, run the
+following command:
+
+    check-db-links -h
+
+
+3. LICENSE
+
+This file is part of the check-db-links utility.
+
+The check-db-links utility is free software: you can redistribute it and/or
+modify it under the terms of the GNU General Public License as published by the
+Free Software Foundation, version 3 of the License.
+
+check-db-links is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along
+with this program. If not, see <http://www.gnu.org/licenses/>.
