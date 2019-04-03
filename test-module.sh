@@ -15,6 +15,10 @@
 # You should have received a copy of the  GNU General Public License  along
 # with this program. If not, see <http://www.gnu.org/licenses/>.
 
+# -------------------------------------------------------------------------
+#                            GLOBAL VARIABLES
+# -------------------------------------------------------------------------
+
 # General information about the script:
 declare -r NAME=${0##*/}
 declare -r VERSION='0.0.1'
@@ -25,6 +29,11 @@ declare -i CHECKED=0
 
 # Command line options:
 declare -i OPT_VERBOSITY=0
+
+
+# -------------------------------------------------------------------------
+#       GENERIC FUNCTIONS REQUIRED FOR TESTING OF ASCIIDOC MODULES
+# -------------------------------------------------------------------------
 
 # Prints an error message to standard error output and terminates the
 # script with a selected exit status.
@@ -113,6 +122,18 @@ function print_report {
   # Print the summary:
   echo -e "\nChecked $CHECKED item(s), found $ISSUES problem(s)."
 }
+
+
+# -------------------------------------------------------------------------
+#                               TEST CASES
+# -------------------------------------------------------------------------
+
+# Put test case definitions here.
+
+
+# -------------------------------------------------------------------------
+#                               MAIN SCRIPT
+# -------------------------------------------------------------------------
 
 # Process command-line options:
 while getopts ':hvV' OPTION; do
