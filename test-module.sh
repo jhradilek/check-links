@@ -23,6 +23,9 @@ declare -r VERSION='0.0.1'
 declare -i ISSUES=0
 declare -i CHECKED=0
 
+# Command line options:
+declare -i OPT_VERBOSITY=0
+
 # Prints an error message to standard error output and terminates the
 # script with a selected exit status.
 #
@@ -69,7 +72,7 @@ function pass {
   (( CHECKED++ ))
 
   # Report a successfully passed test:
-  print_test_result "pass" "$explanation"
+  [[ "$OPT_VERBOSITY" -gt 0 ]] && print_test_result "pass" "$explanation"
 }
 
 # Records a test as failed and prints a related message to standard output.
@@ -104,24 +107,32 @@ function print_module {
 function print_report {
   local -r filename="$1"
 
+  # Print the header:
+  echo -e "Testing file: $(realpath $filename)\n"
+
   # Print the summary:
   echo -e "\nChecked $CHECKED item(s), found $ISSUES problem(s)."
 }
 
 # Process command-line options:
-while getopts ':hv' OPTION; do
+while getopts ':hvV' OPTION; do
   case "$OPTION" in
     h)
       # Print usage information to standard output:
-      echo "Usage: $NAME FILE"
-      echo -e "       $NAME -hv\n"
+      echo "Usage: $NAME [-v] FILE"
+      echo -e "       $NAME -hV\n"
+      echo '  -v           include successful test results in the report'
       echo '  -h           display this help and exit'
-      echo '  -v           display version and exit'
+      echo '  -V           display version and exit'
 
       # Terminate the script:
       exit 0
       ;;
     v)
+      # Increase the verbosity level:
+      OPT_VERBOSITY=1
+      ;;
+    V)
       # Print version information to standard output:
       echo "$NAME $VERSION"
 
