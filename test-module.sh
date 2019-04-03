@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# test-module.sh - test an AsciiDoc module and report possible issues
+# test-module.sh - test an AsciiDoc file and report possible issues
 # Copyright (C) 2013, 2014, 2019 Jaromir Hradilek <jhradilek@gmail.com>
 
 # This program is  free software:  you can redistribute it and/or modify it
@@ -98,18 +98,18 @@ function fail {
   print_test_result "fail" "$explanation"
 }
 
-# Reads an AsciiDoc module, removes unwanted content such as comments from
+# Reads an AsciiDoc file, removes unwanted content such as comments from
 # it, and prints the result to standard output.
 #
-# Usage: print_module FILE
-function print_module {
+# Usage: print_adoc FILE
+function print_adoc {
   local -r filename="$1"
 
   # Remove both single-line and multi-line comments from the supplied file:
   perl -0pe 's{^////\s*\n.*?^////\s*\n}{}msg;s{^//\s.*\n}{}gm;' "$filename"
 }
 
-# Processes the supplied AsciiDoc module and reports problems to standard
+# Processes the supplied AsciiDoc file and reports problems to standard
 # output.
 #
 # Usage: print_report FILE
