@@ -119,17 +119,58 @@ function print_report {
   # Print the header:
   echo -e "Testing file: $(realpath $filename)\n"
 
+  # Run test cases:
+  test_module_prefix "$filename"
+
   # Print the summary:
   echo -e "\nChecked $CHECKED item(s), found $ISSUES problem(s)."
 }
 
 
 # -------------------------------------------------------------------------
-#                               TEST CASES
+#                TEST CASES AND FUNCTIONS RELATED TO THEM
 # -------------------------------------------------------------------------
 
-# Put test case definitions here.
+# Deduces the documentation type from the file name and prints the result
+# to standard output. If the documentation type cannot be determined,
+# prints 'unknown'.
+#
+# Usage: detect_type FILE
+function detect_type {
+  local -r filename="${1##*/}"
 
+  # Analyze the file name:
+  case "$filename" in
+    con_*) echo 'concept';;
+    ref_*) echo 'reference';;
+    proc_*) echo 'procedure';;
+    assembly_*) echo 'assembly';;
+    *) echo 'unknown';;
+  esac
+}
+
+# Verifies that modules and assemblies follow prescribed naming conventions
+# and use one of the following prefixes to signify their type:
+#
+#   con_      - a concept module
+#   ref_      - a reference module
+#   proc_     - a procedure module
+#   assembly_ - an assembly
+#
+# Usage: test_module_prefix FILE
+function test_module_prefix {
+  local -r filename="$1"
+
+  # Deduce the documentation type from the file name:
+  local -r type=$(detect_type "$filename")
+
+  # Check if the type could be deduced and report the result:
+  if [[ "$type" != 'unknown' ]]; then
+    pass "Found correct prefix to identify the file as '$type'."
+  else
+    fail "Missing prefix con_, ref_, proc_, or assembly_ in the file name."
+  fi
+}
 
 # -------------------------------------------------------------------------
 #                               MAIN SCRIPT
