@@ -19,6 +19,10 @@
 declare -r NAME=${0##*/}
 declare -r VERSION='0.0.1'
 
+# Counters for tested items:
+declare -i ISSUES=0
+declare -i CHECKED=0
+
 # Prints an error message to standard error output and terminates the
 # script with a selected exit status.
 #
@@ -44,6 +48,44 @@ function warn {
   echo -e "$NAME: $warning_message" >&2
 }
 
+# Formats a test result message result and prints it to standard output.
+#
+# Usage: print_test_result STATUS EXPLANATION
+function print_test_result {
+  local -ru status="$1"
+  local -r  explanation="$2"
+
+  # Format the message and print it to standard output:
+  printf "%-15s %s\n" "  [ $status ]" "$explanation"
+}
+
+# Records a test as passed and prints a related message to standard output.
+#
+# Usage: pass EXPLANATION
+function pass {
+  local -r explanation="$1"
+
+  # Update the counter:
+  (( CHECKED++ ))
+
+  # Report a successfully passed test:
+  print_test_result "pass" "$explanation"
+}
+
+# Records a test as failed and prints a related message to standard output.
+#
+# Usage: fail EXPLANATION
+function fail {
+  local -r explanation="$1"
+
+  # Update the counters:
+  (( CHECKED++ ))
+  (( ISSUES++ ))
+
+  # Raport a failed test:
+  print_test_result "fail" "$explanation"
+}
+
 # Reads an AsciiDoc module, removes unwanted content such as comments from
 # it, and prints the result to standard output.
 #
@@ -62,7 +104,8 @@ function print_module {
 function print_report {
   local -r filename="$1"
 
-  # TBD
+  # Print the summary:
+  echo -e "\nChecked $CHECKED item(s), found $ISSUES problem(s)."
 }
 
 # Process command-line options:
@@ -106,5 +149,8 @@ declare -r file="$1"
 [[ -r "$file" ]] || exit_with_error "$file: Permission denied" 13
 [[ -f "$file" ]] || exit_with_error "$file: Not a file" 21
 
+# Process the file and print the report:
+print_report "$file"
+
 # Terminate the script:
-exit 0
+[[ "$ISSUES" -eq 0 ]] && exit 0 || exit 1
