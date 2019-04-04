@@ -158,6 +158,7 @@ function print_report {
     # Run test cases for master.adoc:
     test_context_definition "$filename"
     test_internal_definition "$filename"
+    test_rhel_in_headings "$filename"
     test_replaced_projects "$filename"
   else
     # Run test cases for modules and assemblies:
@@ -167,6 +168,7 @@ function print_report {
     test_steps_in_con "$filename"
     test_steps_in_ref "$filename"
     test_context_in_ids "$filename"
+    test_rhel_in_headings "$filename"
     test_replaced_projects "$filename"
   fi
 
@@ -187,6 +189,16 @@ function list_ids {
 
   # Parse IDs:
   print_adoc "$filename" | sed -ne "s/^\[id=['\"]\(.*\)['\"]\].*/\1/p"
+}
+
+# Parses the AsciiDoc file and prints all headings to standard output.
+#
+# Usage: list_headings FILE
+function list_headings {
+  local -r filename="$1"
+
+  # Parse headings:
+  print_adoc "$filename" | sed -ne "s/^=\+ \+\(.*\)$/\1/p"
 }
 
 # Parses the AsciiDoc file and determines whether it contains any steps.
@@ -347,6 +359,30 @@ function test_context_in_ids {
       pass "The '$unique_id' ID includes the 'context' attribute."
     else
       fail "The '$unique_id' ID does not include the 'context' attribute."
+    fi
+  done
+}
+
+# Verifies that Red Hat Enterprise Linux is abbreviated in section headings
+# for brevity.
+#
+# Usage: test_rhel_in_headings FILE
+function test_rhel_in_headings {
+  local -r filename="$1"
+
+  # Locate all headings used in the AsciiDoc file:
+  list_headings "$filename" | while read heading; do
+    # Check that the heading does not spell out Red Hat Enterprise Linux
+    # and report the result:
+    if ! echo "$heading" | \
+         grep -qP 'Red({nbsp}| )Hat({nbsp}| )Enterprise({nbsp}| )Linux'; then
+      # Check if the abbreviation is used to see if the success is worth
+      # mentioning:
+      if echo "$heading" | grep -qP '\bRHEL\b'; then
+        pass "The heading '$heading' does not expand the RHEL abbreviation."
+      fi
+    else
+      fail "The heading '$heading' does not use the RHEL abbreviation."
     fi
   done
 }
