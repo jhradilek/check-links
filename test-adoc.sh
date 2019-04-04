@@ -274,7 +274,8 @@ function test_steps_in_proc {
   # Determine the document type:
   local -r type=$(detect_type "$filename")
 
-  # Check if the file is a procedure module, otherwise do nothing:
+  # Check if the file is a procedure module and report the result,
+  # otherwise do nothing:
   if [[ "$type" == 'procedure' ]]; then
     # Check if the file contains at least one step:
     if has_steps "$filename"; then
@@ -294,7 +295,8 @@ function test_steps_in_con {
   # Determine the document type:
   local -r type=$(detect_type "$filename")
 
-  # Check if the file is a concept module, otherwise do nothing:
+  # Check if the file is a concept module and report the result,
+  # otherwise do nothing:
   if [[ "$type" == 'concept' ]]; then
     # Check if the file contains at least one step:
     if ! has_steps "$filename"; then
@@ -314,7 +316,8 @@ function test_steps_in_ref {
   # Determine the document type:
   local -r type=$(detect_type "$filename")
 
-  # Check if the file is a reference module, otherwise do nothing:
+  # Check if the file is a reference module and report the result,
+  # otherwise do nothing:
   if [[ "$type" == 'reference' ]]; then
     # Check if the file contains at least one step:
     if ! has_steps "$filename"; then
