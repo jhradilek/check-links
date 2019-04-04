@@ -152,8 +152,10 @@ function print_report {
   elif [[ "$type" == 'master' ]]; then
     # Run test cases for master.adoc:
     test_context_definition "$filename"
+    test_internal_definition "$filename"
   else
     # Run test cases for modules and assemblies:
+    test_internal_definition "$filename"
     test_module_prefix "$filename"
     test_steps_in_proc "$filename"
     test_steps_in_con "$filename"
@@ -203,6 +205,21 @@ function test_context_definition {
     pass "The 'context' attribute is set to a non-empty string."
   else
     fail "The 'context' attribute is not set to a non-empty string."
+  fi
+}
+
+# Verifies that the AsciiDoc file does not define the 'internal' attribute.
+#
+# Usage: test_internal_definition FILE
+function test_internal_definition {
+  local -r filename="$1"
+
+  # Check that the file does not contain the attribute definition and
+  # report the result:
+  if ! grep -qP '^:internal:' "$filename"; then
+    pass "The 'internal' attribute is not defined."
+  else
+    fail "The 'internal' attribute is defined. Editorial comments are visible."
   fi
 }
 
