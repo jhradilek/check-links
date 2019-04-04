@@ -340,7 +340,7 @@ function test_context_in_ids {
   local -r filename="$1"
 
   # Locate all IDs used in the AsciiDoc file:
-  for unique_id in $(list_ids "$filename"); do
+  list_ids "$filename" | while read unique_id; do
     # Check if the ID contains the 'context' attribute and report the
     # result:
     if echo "$unique_id" | grep -q '{context}'; then
