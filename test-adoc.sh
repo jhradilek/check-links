@@ -68,7 +68,7 @@ function print_test_result {
   local -r  explanation="$2"
 
   # Format the message and print it to standard output:
-  printf "%-15s %s\n" "  [ $status ]" "$explanation"
+  printf "  %-10s %s\n" "[ $status ]" "$explanation"
 }
 
 # Records a test as passed and prints a related message to standard output.
@@ -98,6 +98,26 @@ function fail {
   print_test_result "fail" "$explanation"
 }
 
+# Deduces the documentat type from the file name and prints the result to
+# standard output. If the document type cannot be determined, prints
+# 'unknown'.
+#
+# Usage: detect_type FILE
+function detect_type {
+  local -r filename="${1##*/}"
+
+  # Analyze the file name:
+  case "$filename" in
+    con_*) echo 'concept';;
+    ref_*) echo 'reference';;
+    proc_*) echo 'procedure';;
+    assembly_*) echo 'assembly';;
+    master.adoc) echo 'master';;
+    *attributes.adoc) echo 'attributes';;
+    *) echo 'unknown';;
+  esac
+}
+
 # Reads an AsciiDoc file, removes unwanted content such as comments from
 # it, and prints the result to standard output.
 #
@@ -116,16 +136,21 @@ function print_adoc {
 function print_report {
   local -r filename="$1"
 
-  # Extract the base file name, without the full path:
-  local -r basename=${filename##*/}
+  # Determine the document type:
+  local -r type=$(detect_type "$filename")
 
   # Print the header:
   echo -e "Testing file: $(realpath $filename)\n"
+  echo -e "  Document type: $type\n"
 
-  # Try to deduce what the AsciiDoc file is from its file name and run
-  # dedicated test cases for that documentation type:
-  if [[ "$basename" = 'master.adoc' ]]; then
-    # Run test cases for master.adoc
+  # Run test cases depending on the detected document type. If the document
+  # type could not be determined, treat the file just like a module or
+  # assembly:
+  if [[ "$type" == 'attributes' ]]; then
+    # Do nothing with attribute definition files:
+    :
+  elif [[ "$type" == 'master' ]]; then
+    # Run test cases for master.adoc:
     test_context_definition "$filename"
   else
     # Run test cases for modules and assemblies:
@@ -141,24 +166,6 @@ function print_report {
 # -------------------------------------------------------------------------
 #                TEST CASES AND FUNCTIONS RELATED TO THEM
 # -------------------------------------------------------------------------
-
-# Deduces the documentation type from the file name and prints the result
-# to standard output. If the documentation type cannot be determined,
-# prints 'unknown'.
-#
-# Usage: detect_type FILE
-function detect_type {
-  local -r filename="${1##*/}"
-
-  # Analyze the file name:
-  case "$filename" in
-    con_*) echo 'concept';;
-    ref_*) echo 'reference';;
-    proc_*) echo 'procedure';;
-    assembly_*) echo 'assembly';;
-    *) echo 'unknown';;
-  esac
-}
 
 # Parses the AsciiDoc file and prints all IDs to standard output.
 #
@@ -273,6 +280,9 @@ shift $(($OPTIND - 1))
 
 # Get the name of the AsciiDoc file:
 declare -r file="$1"
+
+# Verify that the supplied file is an AsciiDoc file:
+[[ "${file##*.}" == 'adoc' ]] || exit_with_error "$file: Not an AsciiDoc file" 22
 
 # Verify that the supplied file exists and is readable:
 [[ -e "$file" ]] || exit_with_error "$file: No such file or directory" 2
