@@ -152,6 +152,7 @@ function print_report {
   if [[ "$type" == 'attributes' ]]; then
     # Do nothing with attribute definition files:
     test_attributes_location "$filename"
+    test_internal_definition "$filename"
   elif [[ "$type" == 'master' ]]; then
     # Run test cases for master.adoc:
     test_context_definition "$filename"
