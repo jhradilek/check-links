@@ -221,7 +221,7 @@ function test_module_prefix {
 
   # Check if the type could be deduced and report the result:
   if [[ "$type" != 'unknown' ]]; then
-    pass "The file name uses a prefix to identify itself as '$type'."
+    pass "The file name uses the con_, ref_, proc_, or assembly prefix."
   else
     fail "The file name does not use the con_, ref_, proc_, or assembly_ prefix."
   fi
@@ -236,7 +236,7 @@ function test_steps_in_proc {
   # Determine the document type:
   local -r type=$(detect_type "$filename")
 
-  # Check if the document type is procedure, otherwise do nothing:
+  # Check if the file is a procedure module, otherwise do nothing:
   if [[ "$type" == 'procedure' ]]; then
     # Check if the file contains at least one step:
     if has_steps "$filename"; then
