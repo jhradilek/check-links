@@ -116,11 +116,21 @@ function print_adoc {
 function print_report {
   local -r filename="$1"
 
+  # Extract the base file name, without the full path:
+  local -r basename=${filename##*/}
+
   # Print the header:
   echo -e "Testing file: $(realpath $filename)\n"
 
-  # Run test cases:
-  test_module_prefix "$filename"
+  # Try to deduce what the AsciiDoc file is from its file name and run
+  # dedicated test cases for that documentation type:
+  if [[ "$basename" = 'master.adoc' ]]; then
+    # Run test cases for master.adoc
+    test_context "$filename"
+  else
+    # Run test cases for modules and assemblies:
+    test_module_prefix "$filename"
+  fi
 
   # Print the summary:
   echo -e "\nChecked $CHECKED item(s), found $ISSUES problem(s)."
@@ -170,6 +180,22 @@ function test_module_prefix {
   else
     fail "Missing prefix con_, ref_, proc_, or assembly_ in the file name."
   fi
+}
+
+# Verifies that the AsciiDoc file sets the value of the 'context' attribute
+# to a non-empty string.
+#
+# Usage: test_context FILE
+function test_context {
+  local -r filename="$1"
+
+  # Check if the file contains the attribute definition:
+  if grep -qP '^:context:\s*\S+' "$filename"; then
+    pass "The 'context' attribute is set to a non-empty string."
+  else
+    fail "Missing definition of the 'context' attribute."
+  fi
+
 }
 
 # -------------------------------------------------------------------------
