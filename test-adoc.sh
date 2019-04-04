@@ -68,7 +68,7 @@ function print_test_result {
   local -r  explanation="$2"
 
   # Format the message and print it to standard output:
-  printf "  %-10s %s\n" "[ $status ]" "$explanation"
+  printf "  %-9s %s\n" "[ $status ]" "$explanation"
 }
 
 # Records a test as passed and prints a related message to standard output.
@@ -81,7 +81,7 @@ function pass {
   (( CHECKED++ ))
 
   # Report a successfully passed test:
-  [[ "$OPT_VERBOSITY" -gt 0 ]] && print_test_result "pass" "$explanation"
+  [[ "$OPT_VERBOSITY" -gt 0 ]] && print_test_result " ok " "$explanation"
 }
 
 # Records a test as failed and prints a related message to standard output.
