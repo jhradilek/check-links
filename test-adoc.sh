@@ -150,13 +150,15 @@ function print_report {
   # type could not be determined, treat the file just like a module or
   # assembly:
   if [[ "$type" == 'attributes' ]]; then
-    # Do nothing with attribute definition files:
+    # Run test cases for attribute definition files:
     test_attributes_location "$filename"
     test_internal_definition "$filename"
+    test_replaced_projects "$filename"
   elif [[ "$type" == 'master' ]]; then
     # Run test cases for master.adoc:
     test_context_definition "$filename"
     test_internal_definition "$filename"
+    test_replaced_projects "$filename"
   else
     # Run test cases for modules and assemblies:
     test_internal_definition "$filename"
@@ -165,6 +167,7 @@ function print_report {
     test_steps_in_con "$filename"
     test_steps_in_ref "$filename"
     test_context_in_ids "$filename"
+    test_replaced_projects "$filename"
   fi
 
   # Print the summary:
@@ -344,6 +347,28 @@ function test_context_in_ids {
       pass "The '$unique_id' ID includes the 'context' attribute."
     else
       fail "The '$unique_id' ID does not include the 'context' attribute."
+    fi
+  done
+}
+
+# Verifies that none of the renamed or replaced projects are mentioned.
+#
+# Usage: test_replaced_projects FILE
+function test_replaced_projects {
+  local -r filename="$1"
+
+  # Define a glossary of old and new project names:
+  local -A projects
+  projects['Cockpit']='RHEL web console'
+
+  # Iterate over the project names:
+  for name in "${!projects[@]}"; do
+    # Check if the AsciiDoc file mentions the replaced project and report
+    # the result:
+    if ! print_adoc "$filename" | grep -qP "\b$name\b"; then
+      pass "The '$name' project is not mentioned."
+    else
+      fail "The '$name' project is mentioned. Use ${projects[$name]} instead."
     fi
   done
 }
