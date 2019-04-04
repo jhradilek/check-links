@@ -151,7 +151,7 @@ function print_report {
   # assembly:
   if [[ "$type" == 'attributes' ]]; then
     # Do nothing with attribute definition files:
-    :
+    test_attributes_location "$filename"
   elif [[ "$type" == 'master' ]]; then
     # Run test cases for master.adoc:
     test_context_definition "$filename"
@@ -193,6 +193,22 @@ function has_steps {
 
   # Parse steps:
   print_adoc "$filename" | grep -qP '^\.+\s+\S+'
+}
+
+# Verifies that all attribute definitions are stored in the
+# meta/attributes.adoc file to allow their reuse.
+#
+# Usage: test_attributes_location FILE
+function test_attributes_location {
+  local -r filename=$(realpath "$1")
+
+  # Check if the file is located in meta/attribute.doc and report the
+  # result:
+  if [[ "$filename" == */meta/attributes.adoc ]]; then
+    pass "Attribute definitions are stored in meta/attributes.adoc."
+  else
+    fail "Attribute definitions belong to meta/attributes.adoc to enable reuse."
+  fi
 }
 
 # Verifies that the AsciiDoc file sets the value of the 'context' attribute
