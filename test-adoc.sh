@@ -155,6 +155,7 @@ function print_report {
   else
     # Run test cases for modules and assemblies:
     test_module_prefix "$filename"
+    test_steps_in_proc "$filename"
     test_context_in_ids "$filename"
   fi
 
@@ -175,6 +176,32 @@ function list_ids {
 
   # Parse IDs:
   print_adoc "$filename" | sed -ne "s/^\[id=['\"]\(.*\)['\"]\].*/\1/p"
+}
+
+# Parses the AsciiDoc file and determines whether it contains any steps.
+#
+# Usage: has_steps FILE
+function has_steps {
+  local -r filename=$1
+
+  # Parse steps:
+  print_adoc "$filename" | grep -qP '^\.+\s+\S+'
+}
+
+# Verifies that the AsciiDoc file sets the value of the 'context' attribute
+# to a non-empty string.
+#
+# Usage: test_context_definition FILE
+function test_context_definition {
+  local -r filename="$1"
+
+  # Check if the file contains the attribute definition and report the
+  # result:
+  if grep -qP '^:context:\s*\S+' "$filename"; then
+    pass "The 'context' attribute is set to a non-empty string."
+  else
+    fail "The 'context' attribute is not set to a non-empty string."
+  fi
 }
 
 # Verifies that modules and assemblies follow prescribed naming conventions
@@ -200,26 +227,30 @@ function test_module_prefix {
   fi
 }
 
-# Verifies that the AsciiDoc file sets the value of the 'context' attribute
-# to a non-empty string.
+# Verifies that a procedure module contains at least one step.
 #
-# Usage: test_context_definition FILE
-function test_context_definition {
+# Usage: test_steps_in_proc FILE
+function test_steps_in_proc {
   local -r filename="$1"
 
-  # Check if the file contains the attribute definition and report the
-  # result:
-  if grep -qP '^:context:\s*\S+' "$filename"; then
-    pass "The 'context' attribute is set to a non-empty string."
-  else
-    fail "The 'context' attribute is not set to a non-empty string."
+  # Determine the document type:
+  local -r type=$(detect_type "$filename")
+
+  # Check if the document type is procedure, otherwise do nothing:
+  if [[ "$type" == 'procedure' ]]; then
+    # Check if the file contains at least one step:
+    if has_steps "$filename"; then
+      pass "The procedure module contains at least one step."
+    else
+      fail "The procedure module does not contain any steps."
+    fi
   fi
 }
 
 # Verifies that all IDs have the 'context' attribute in them to remain
 # reusable in different assemblies.
 #
-# Usage: test_context_in_ids
+# Usage: test_context_in_ids FILE
 function test_context_in_ids {
   local -r filename="$1"
 
@@ -228,9 +259,9 @@ function test_context_in_ids {
     # Check if the ID contains the 'context' attribute and report the
     # result:
     if echo "$unique_id" | grep -q '{context}'; then
-      pass "The ID '$unique_id' uses the 'context' attribute."
+      pass "The '$unique_id' ID includes the 'context' attribute."
     else
-      fail "The ID '$unique_id' does not use the 'context' attribute."
+      fail "The '$unique_id' ID does not include the 'context' attribute."
     fi
   done
 }
