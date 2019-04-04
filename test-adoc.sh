@@ -126,7 +126,7 @@ function print_adoc {
   local -r filename="$1"
 
   # Remove both single-line and multi-line comments from the supplied file:
-  perl -0pe 's{^////\s*\n.*?^////\s*\n}{}msg;s{^//\s.*\n}{}gm;' "$filename"
+  perl -0pe 's{^////\s*\n.*?^////\s*\n}{}msg;s{^//.*\n}{}gm;' "$filename"
 }
 
 # Processes the supplied AsciiDoc file and reports problems to standard
