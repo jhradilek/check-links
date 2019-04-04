@@ -126,10 +126,11 @@ function print_report {
   # dedicated test cases for that documentation type:
   if [[ "$basename" = 'master.adoc' ]]; then
     # Run test cases for master.adoc
-    test_context "$filename"
+    test_context_definition "$filename"
   else
     # Run test cases for modules and assemblies:
     test_module_prefix "$filename"
+    test_context_in_ids "$filename"
   fi
 
   # Print the summary:
@@ -159,6 +160,16 @@ function detect_type {
   esac
 }
 
+# Parses the AsciiDoc file and prints all IDs to standard output.
+#
+# Usage: list_ids FILE
+function list_ids {
+  local -r filename="$1"
+
+  # Parse IDs:
+  print_adoc "$filename" | sed -ne "s/^\[id=['\"]\(.*\)['\"]\].*/\1/p"
+}
+
 # Verifies that modules and assemblies follow prescribed naming conventions
 # and use one of the following prefixes to signify their type:
 #
@@ -176,27 +187,47 @@ function test_module_prefix {
 
   # Check if the type could be deduced and report the result:
   if [[ "$type" != 'unknown' ]]; then
-    pass "Found correct prefix to identify the file as '$type'."
+    pass "The file name uses a prefix to identify itself as '$type'."
   else
-    fail "Missing prefix con_, ref_, proc_, or assembly_ in the file name."
+    fail "The file name does not use the con_, ref_, proc_, or assembly_ prefix."
   fi
 }
 
 # Verifies that the AsciiDoc file sets the value of the 'context' attribute
 # to a non-empty string.
 #
-# Usage: test_context FILE
-function test_context {
+# Usage: test_context_definition FILE
+function test_context_definition {
   local -r filename="$1"
 
-  # Check if the file contains the attribute definition:
+  # Check if the file contains the attribute definition and report the
+  # result:
   if grep -qP '^:context:\s*\S+' "$filename"; then
     pass "The 'context' attribute is set to a non-empty string."
   else
-    fail "Missing definition of the 'context' attribute."
+    fail "The 'context' attribute is not set to a non-empty string."
   fi
-
 }
+
+# Verifies that all IDs have the 'context' attribute in them to remain
+# reusable in different assemblies.
+#
+# Usage: test_context_in_ids
+function test_context_in_ids {
+  local -r filename="$1"
+
+  # Locate all IDs used in the AsciiDoc file:
+  for unique_id in $(list_ids "$filename"); do
+    # Check if the ID contains the 'context' attribute and report the
+    # result:
+    if echo "$unique_id" | grep -q '{context}'; then
+      pass "The ID '$unique_id' uses the 'context' attribute."
+    else
+      fail "The ID '$unique_id' does not use the 'context' attribute."
+    fi
+  done
+}
+
 
 # -------------------------------------------------------------------------
 #                               MAIN SCRIPT
