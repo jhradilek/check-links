@@ -224,7 +224,7 @@ function test_context_definition {
 
   # Check if the file contains the attribute definition and report the
   # result:
-  if grep -qP '^:context:\s*\S+' "$filename"; then
+  if print_adoc "$filename" | grep -qP '^:context:\s*\S+'; then
     pass "The 'context' attribute is set to a non-empty string."
   else
     fail "The 'context' attribute is not set to a non-empty string."
@@ -239,7 +239,7 @@ function test_internal_definition {
 
   # Check that the file does not contain the attribute definition and
   # report the result:
-  if ! grep -qP '^:internal:' "$filename"; then
+  if ! print_adoc "$filename" | grep -qP '^:internal:'; then
     pass "The 'internal' attribute is not defined."
   else
     fail "The 'internal' attribute is defined. Editorial comments are visible."
