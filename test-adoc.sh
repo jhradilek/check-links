@@ -156,6 +156,7 @@ function print_report {
     # Run test cases for modules and assemblies:
     test_module_prefix "$filename"
     test_steps_in_proc "$filename"
+    test_steps_in_con "$filename"
     test_context_in_ids "$filename"
   fi
 
@@ -243,6 +244,26 @@ function test_steps_in_proc {
       pass "The procedure module contains at least one step."
     else
       fail "The procedure module does not contain any steps."
+    fi
+  fi
+}
+
+# Verifies that a concept module does not include any steps.
+#
+# Usage: test_steps_in_con FILE
+function test_steps_in_con {
+  local -r filename="$1"
+
+  # Determine the document type:
+  local -r type=$(detect_type "$filename")
+
+  # Check if the file is a concept module, otherwise do nothing:
+  if [[ "$type" == 'concept' ]]; then
+    # Check if the file contains at least one step:
+    if ! has_steps "$filename"; then
+      pass "The concept module does not contain any steps."
+    else
+      fail "The concept module contains one or more steps."
     fi
   fi
 }
