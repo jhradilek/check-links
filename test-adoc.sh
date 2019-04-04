@@ -157,6 +157,7 @@ function print_report {
     test_module_prefix "$filename"
     test_steps_in_proc "$filename"
     test_steps_in_con "$filename"
+    test_steps_in_ref "$filename"
     test_context_in_ids "$filename"
   fi
 
@@ -264,6 +265,26 @@ function test_steps_in_con {
       pass "The concept module does not contain any steps."
     else
       fail "The concept module contains one or more steps."
+    fi
+  fi
+}
+
+# Verifies that a reference module does not include any steps.
+#
+# Usage: test_steps_in_ref FILE
+function test_steps_in_ref {
+  local -r filename="$1"
+
+  # Determine the document type:
+  local -r type=$(detect_type "$filename")
+
+  # Check if the file is a reference module, otherwise do nothing:
+  if [[ "$type" == 'reference' ]]; then
+    # Check if the file contains at least one step:
+    if ! has_steps "$filename"; then
+      pass "The reference module does not contain any steps."
+    else
+      fail "The reference module contains one or more steps."
     fi
   fi
 }
