@@ -113,7 +113,7 @@ function detect_type {
     proc_*) echo 'procedure';;
     assembly_*) echo 'assembly';;
     master.adoc) echo 'master';;
-    *attributes.adoc) echo 'attributes';;
+    local-attributes.adoc|attributes.adoc) echo 'attributes';;
     *) echo 'unknown';;
   esac
 }
