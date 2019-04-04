@@ -139,8 +139,11 @@ function print_report {
   # Determine the document type:
   local -r type=$(detect_type "$filename")
 
+  # Get the full path for the tested file:
+  local -r fullpath=$(realpath "$filename")
+
   # Print the header:
-  echo -e "Testing file: $(realpath $filename)\n"
+  echo -e "Testing file: $fullpath\n"
   echo -e "  Document type: $type\n"
 
   # Run test cases depending on the detected document type. If the document
