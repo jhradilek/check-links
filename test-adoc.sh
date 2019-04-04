@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# test-module.sh - test an AsciiDoc file and report possible issues
+# test-adoc.sh - test an AsciiDoc file and report possible issues
 # Copyright (C) 2013, 2014, 2019 Jaromir Hradilek <jhradilek@gmail.com>
 
 # This program is  free software:  you can redistribute it and/or modify it
