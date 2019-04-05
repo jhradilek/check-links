@@ -502,6 +502,13 @@ shift $(($OPTIND - 1))
 # Verify the number of command line arguments:
 [[ "$#" -gt 0 ]] || exit_with_error 'Invalid number of arguments' 22
 
+# Verify that all required utilities are present in the system:
+for dependency in curl asciidoctor; do
+  if ! type "$dependency" &>/dev/null; then
+    exit_with_error "Missing dependency -- '$dependency'" 1
+  fi
+done
+
 # Process the rest of the remaining command-line arguments:
 for file in "$@"; do
   # Process the file and print the report:
