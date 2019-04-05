@@ -26,9 +26,11 @@ declare -r VERSION='0.0.1'
 # Counters for tested items:
 declare -i ISSUES=0
 declare -i CHECKED=0
+declare -i FILES=0
 
 # Command line options:
 declare -i OPT_VERBOSITY=0
+declare -i OPT_INCLUDES=0
 
 
 # -------------------------------------------------------------------------
@@ -129,12 +131,47 @@ function print_adoc {
   perl -0pe 's{^////\s*\n.*?^////\s*\n}{}msg;s{^//.*\n}{}gm;' "$filename"
 }
 
+# Reads an AsciiDoc file and prints a list of all included files to
+# standard output.
+#
+# Usage: print_includes FILE
+function print_includes {
+  local -r filename="$1"
+
+  # Parse the AsciiDoc file, get a complete list of included files, and
+  # print their full paths to standard output:
+  ruby <<-EOF 2>/dev/null
+#!/usr/bin/env ruby
+
+require 'asciidoctor'
+require 'pathname'
+
+document = Asciidoctor.load_file("$filename", doctype: :book, safe: :safe)
+document.reader.includes.each { |filename|
+  path = Pathname.new("#{filename}.adoc")
+  puts path.realpath
+}
+EOF
+
+  # Verify that the AsciiDoc file could be processed and report warning
+  # if it could not:
+  [[ "$?" -eq 0 ]] || warn "$file: Unable to list included files"
+}
+
 # Processes the supplied AsciiDoc file and reports problems to standard
 # output.
 #
 # Usage: print_report FILE
 function print_report {
   local -r filename="$1"
+
+  # Verify that the supplied file is an AsciiDoc file:
+  [[ "${file##*.}" == 'adoc' ]] || exit_with_error "$file: Not an AsciiDoc file" 22
+
+  # Verify that the supplied file exists and is readable:
+  [[ -e "$file" ]] || exit_with_error "$file: No such file or directory" 2
+  [[ -r "$file" ]] || exit_with_error "$file: Permission denied" 13
+  [[ -f "$file" ]] || exit_with_error "$file: Not a file" 21
 
   # Determine the document type:
   local -r type=$(detect_type "$filename")
@@ -171,6 +208,9 @@ function print_report {
     test_rhel_in_headings "$filename"
     test_replaced_projects "$filename"
   fi
+
+  # Update the counter:
+  (( FILES++ ))
 }
 
 # Prints the summary of the test results to standard output.
@@ -178,7 +218,7 @@ function print_report {
 # Usage: print_summary
 function print_summary {
   # Print the summary:
-  echo -e "\nChecked $CHECKED item(s), found $ISSUES problem(s)."
+  echo -e "\nChecked $CHECKED item(s) in $FILES file(s), found $ISSUES problem(s)."
 }
 
 
@@ -357,7 +397,7 @@ function test_context_in_ids {
   local -r filename="$1"
 
   # Locate all IDs used in the AsciiDoc file:
-  list_ids "$filename" | while read unique_id; do
+  while read unique_id; do
     # Check if the ID contains the 'context' attribute and report the
     # result:
     if echo "$unique_id" | grep -q '{context}'; then
@@ -365,7 +405,7 @@ function test_context_in_ids {
     else
       fail "The '$unique_id' ID does not include the 'context' attribute."
     fi
-  done
+  done < <(list_ids "$filename")
 }
 
 # Verifies that Red Hat Enterprise Linux is abbreviated in section headings
@@ -376,7 +416,7 @@ function test_rhel_in_headings {
   local -r filename="$1"
 
   # Locate all headings used in the AsciiDoc file:
-  list_headings "$filename" | while read heading; do
+  while read heading; do
     # Check that the heading does not spell out Red Hat Enterprise Linux
     # and report the result:
     if ! echo "$heading" | \
@@ -389,7 +429,7 @@ function test_rhel_in_headings {
     else
       fail "The heading '$heading' does not use the RHEL abbreviation."
     fi
-  done
+  done < <(list_headings "$filename")
 }
 
 # Verifies that none of the renamed or replaced projects are mentioned.
@@ -420,18 +460,23 @@ function test_replaced_projects {
 # -------------------------------------------------------------------------
 
 # Process command-line options:
-while getopts ':hvV' OPTION; do
+while getopts ':hivV' OPTION; do
   case "$OPTION" in
     h)
       # Print usage information to standard output:
-      echo "Usage: $NAME [-v] FILE..."
+      echo "Usage: $NAME [-iv] FILE..."
       echo -e "       $NAME -hV\n"
+      echo '  -i           also test included files'
       echo '  -v           include successful test results in the report'
       echo '  -h           display this help and exit'
       echo '  -V           display version and exit'
 
       # Terminate the script:
       exit 0
+      ;;
+    i)
+      # Enable processing of included files:
+      OPT_INCLUDES=1
       ;;
     v)
       # Increase the verbosity level:
@@ -459,18 +504,19 @@ shift $(($OPTIND - 1))
 
 # Process the rest of the remaining command-line arguments:
 for file in "$@"; do
-  # Verify that the supplied file is an AsciiDoc file:
-  [[ "${file##*.}" == 'adoc' ]] || exit_with_error "$file: Not an AsciiDoc file" 22
-
-  # Verify that the supplied file exists and is readable:
-  [[ -e "$file" ]] || exit_with_error "$file: No such file or directory" 2
-  [[ -r "$file" ]] || exit_with_error "$file: Permission denied" 13
-  [[ -f "$file" ]] || exit_with_error "$file: Not a file" 21
-
   # Process the file and print the report:
   print_report "$file"
+
+  # Check whether to also process included files:
+  if [[ "$OPT_INCLUDES" -gt 0 ]]; then
+    # Process each included file and print the report for it:
+    while read include; do
+      print_report "$include"
+    done < <(print_includes "$file")
+  fi
 done
 
+# Print the summary:
 print_summary
 
 # Terminate the script:
