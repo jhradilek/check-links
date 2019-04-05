@@ -143,7 +143,7 @@ function print_report {
   local -r fullpath=$(realpath "$filename")
 
   # Print the header:
-  echo -e "Testing file: $fullpath\n"
+  echo -e "\nTesting file: $fullpath\n"
   echo -e "  Document type: $type\n"
 
   # Run test cases depending on the detected document type. If the document
@@ -171,7 +171,12 @@ function print_report {
     test_rhel_in_headings "$filename"
     test_replaced_projects "$filename"
   fi
+}
 
+# Prints the summary of the test results to standard output.
+#
+# Usage: print_summary
+function print_summary {
   # Print the summary:
   echo -e "\nChecked $CHECKED item(s), found $ISSUES problem(s)."
 }
@@ -419,7 +424,7 @@ while getopts ':hvV' OPTION; do
   case "$OPTION" in
     h)
       # Print usage information to standard output:
-      echo "Usage: $NAME [-v] FILE"
+      echo "Usage: $NAME [-v] FILE..."
       echo -e "       $NAME -hV\n"
       echo '  -v           include successful test results in the report'
       echo '  -h           display this help and exit'
@@ -450,21 +455,23 @@ done
 shift $(($OPTIND - 1))
 
 # Verify the number of command line arguments:
-[[ "$#" -eq 1 ]] || exit_with_error 'Invalid number of arguments' 22
+[[ "$#" -gt 0 ]] || exit_with_error 'Invalid number of arguments' 22
 
-# Get the name of the AsciiDoc file:
-declare -r file="$1"
+# Process the rest of the remaining command-line arguments:
+for file in "$@"; do
+  # Verify that the supplied file is an AsciiDoc file:
+  [[ "${file##*.}" == 'adoc' ]] || exit_with_error "$file: Not an AsciiDoc file" 22
 
-# Verify that the supplied file is an AsciiDoc file:
-[[ "${file##*.}" == 'adoc' ]] || exit_with_error "$file: Not an AsciiDoc file" 22
+  # Verify that the supplied file exists and is readable:
+  [[ -e "$file" ]] || exit_with_error "$file: No such file or directory" 2
+  [[ -r "$file" ]] || exit_with_error "$file: Permission denied" 13
+  [[ -f "$file" ]] || exit_with_error "$file: Not a file" 21
 
-# Verify that the supplied file exists and is readable:
-[[ -e "$file" ]] || exit_with_error "$file: No such file or directory" 2
-[[ -r "$file" ]] || exit_with_error "$file: Permission denied" 13
-[[ -f "$file" ]] || exit_with_error "$file: Not a file" 21
+  # Process the file and print the report:
+  print_report "$file"
+done
 
-# Process the file and print the report:
-print_report "$file"
+print_summary
 
 # Terminate the script:
 [[ "$ISSUES" -eq 0 ]] && exit 0 || exit 1
