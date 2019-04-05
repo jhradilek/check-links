@@ -380,7 +380,7 @@ function test_rhel_in_headings {
     # Check that the heading does not spell out Red Hat Enterprise Linux
     # and report the result:
     if ! echo "$heading" | \
-         grep -qP 'Red({nbsp}| )Hat({nbsp}| )Enterprise({nbsp}| )Linux'; then
+         grep -qP 'Red({nbsp}| )Hat({nbsp}| )Enterprise({nbsp}| )Linux|{RHEL}'; then
       # Check if the abbreviation is used to see if the success is worth
       # mentioning:
       if echo "$heading" | grep -qP '\bRHEL\b'; then
