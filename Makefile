@@ -1,5 +1,5 @@
-# A custom makefile for the check-db-links utility.
-# Copyright (C) 2014 Jaromir Hradilek <jhradilek@gmail.com>
+# A custom makefile for the test-adoc utility.
+# Copyright (C) 2014, 2019 Jaromir Hradilek <jhradilek@gmail.com>
 
 # This program is  free software:  you can redistribute it and/or modify it
 # under  the terms  of the  GNU General Public License  as published by the
@@ -14,15 +14,15 @@
 # with this program. If not, see <http://www.gnu.org/licenses/>.
 
 # General information about the utility:
-NAME    = check-db-links
-VERSION = 20140613
+NAME    = test-adoc
+VERSION = 20190408
 
 # General settings:
 SHELL   = /bin/sh
 INSTALL = /usr/bin/install -c
 POD2MAN = /usr/bin/pod2man
-SRCS    = check-db-links.sh
-MAN1    = check-db-links.1
+SRCS    = test-adoc.sh
+MAN1    = test-adoc.1
 DOCS    = AUTHORS COPYING INSTALL README TODO
 
 # Target directories:
@@ -47,9 +47,9 @@ install: $(SRCS) $(MAN1) $(DOCS)
 	$(INSTALL) -d $(mandir)
 	$(INSTALL) -d $(docdir)
 	@echo "Installing the utility:"
-	$(INSTALL) -m 755 check-db-links.sh $(bindir)/check-db-links
+	$(INSTALL) -m 755 test-adoc.sh $(bindir)/test-adoc
 	@echo "Installing the manual page:"
-	$(INSTALL) -m 644 check-db-links.1 $(mandir)
+	$(INSTALL) -m 644 test-adoc.1 $(mandir)
 	@echo "Installing the documentation:"
 	$(INSTALL) -m 644 AUTHORS $(docdir)
 	$(INSTALL) -m 644 COPYING $(docdir)
@@ -62,9 +62,9 @@ install: $(SRCS) $(MAN1) $(DOCS)
 .PHONY: uninstall
 uninstall:
 	@echo "Removing the utility:"
-	-rm -f $(bindir)/check-db-links
+	-rm -f $(bindir)/test-adoc
 	@echo "Removing the manual page:"
-	-rm -f $(mandir)/check-db-links.1
+	-rm -f $(mandir)/test-adoc.1
 	@echo "Removing the documentation:"
 	-rm -f $(docdir)/AUTHORS
 	-rm -f $(docdir)/COPYING
