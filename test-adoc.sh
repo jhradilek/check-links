@@ -212,6 +212,7 @@ function print_report {
     test_replaced_projects "$filename"
     test_extarnal_links "$filename"
     test_old_rhel_links "$filename"
+    test_leveloffsets "$filename"
   fi
 
   # Update the counter:
@@ -551,6 +552,40 @@ function test_old_rhel_links {
     pass "Link refers to the current RHEL release: '$link'"
   done < <(echo -e "$links\n$wrong" | sed '/^$/d' | sort | uniq -u )
 }
+
+# Verifies that only assemblies have includes, and that these always add
+# exactly one level.
+#
+# Usage: test_leveloffsets FILE
+function test_leveloffsets {
+  local -r filename="$1"
+  (print_adoc "$filename" | grep -qP "include::[^\[]+\[leveloffset=\+1\]")
+  local -r good_leveloffsets="$?"
+  (print_adoc "$filename" | grep -qP "include::[^\[]+\[(?!leveloffset=\+1)")
+  local -r bad_leveloffsets="$?"
+  (print_adoc "$filename" | grep -qP "include::[^\[]+\[")
+  local -r any_includes="$?"
+  # vars above:  zero if found, one if not found
+  if [[ "$type" == 'assembly' ]] ; then
+    if [[ "$any_includes" -gt 0 ]] ; then
+      fail "Assembly does not contain any included modules."
+    else
+      pass " Assembly contains includes."
+    fi
+  elif [ "$type" == 'procedure' ] || [ "$type" == 'concept' ] || [ "$type" == 'reference' ] ; then # tests all modules
+    if [[ "$any_includes" -eq 0 ]] ; then
+      fail "Module contains includes."
+    else
+      pass "Module does not contain any includes."
+    fi
+  fi
+  if [[ "$bad_leveloffsets" -eq 0 ]]; then # test unclean leveloffsets in anything
+    fail "Found leveloffsets that don't add exactly one level."
+  else
+    pass "Found no leveloffsets that don't add exactly one level."
+  fi
+}
+
 
 # -------------------------------------------------------------------------
 #                               MAIN SCRIPT
