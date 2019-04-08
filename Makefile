@@ -1,4 +1,4 @@
-# A custom makefile for the test-adoc utility.
+# A custom makefile for documentation testing utilities.
 # Copyright (C) 2014, 2019 Jaromir Hradilek <jhradilek@gmail.com>
 
 # This program is  free software:  you can redistribute it and/or modify it
@@ -14,15 +14,15 @@
 # with this program. If not, see <http://www.gnu.org/licenses/>.
 
 # General information about the utility:
-NAME    = test-adoc
+NAME    = test-docs
 VERSION = 20190408
 
 # General settings:
 SHELL   = /bin/sh
 INSTALL = /usr/bin/install -c
 POD2MAN = /usr/bin/pod2man
-SRCS    = test-adoc.sh
-MAN1    = test-adoc.1
+SRCS    = test-adoc.sh test-docbk.sh
+MAN1    = test-adoc.1 test-docbk.1
 DOCS    = AUTHORS COPYING INSTALL README TODO
 
 # Target directories:
@@ -46,11 +46,12 @@ install: $(SRCS) $(MAN1) $(DOCS)
 	$(INSTALL) -d $(bindir)
 	$(INSTALL) -d $(mandir)
 	$(INSTALL) -d $(docdir)
-	@echo "Installing the utility:"
+	@echo "Installing utilities:"
 	$(INSTALL) -m 755 test-adoc.sh $(bindir)/test-adoc
-	@echo "Installing the manual page:"
+	$(INSTALL) -m 755 test-docbk.sh $(bindir)/test-docbk
+	@echo "Installing manual pages:"
 	$(INSTALL) -m 644 test-adoc.1 $(mandir)
-	@echo "Installing the documentation:"
+	@echo "Installing documentation files:"
 	$(INSTALL) -m 644 AUTHORS $(docdir)
 	$(INSTALL) -m 644 COPYING $(docdir)
 	$(INSTALL) -m 644 INSTALL $(docdir)
@@ -61,11 +62,13 @@ install: $(SRCS) $(MAN1) $(DOCS)
 
 .PHONY: uninstall
 uninstall:
-	@echo "Removing the utility:"
+	@echo "Removing utilities:"
 	-rm -f $(bindir)/test-adoc
-	@echo "Removing the manual page:"
+	-rm -f $(bindir)/test-docbk
+	@echo "Removing manual pages:"
 	-rm -f $(mandir)/test-adoc.1
-	@echo "Removing the documentation:"
+	-rm -f $(mandir)/test-docbk.1
+	@echo "Removing documentation files:"
 	-rm -f $(docdir)/AUTHORS
 	-rm -f $(docdir)/COPYING
 	-rm -f $(docdir)/INSTALL
