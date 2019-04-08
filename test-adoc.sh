@@ -198,6 +198,7 @@ function print_report {
     test_rhel_in_headings "$filename"
     test_replaced_projects "$filename"
     test_extarnal_links "$filename"
+    test_old_rhel_links "$filename"
   else
     # Run test cases for modules and assemblies:
     test_internal_definition "$filename"
@@ -209,6 +210,7 @@ function print_report {
     test_rhel_in_headings "$filename"
     test_replaced_projects "$filename"
     test_extarnal_links "$filename"
+    test_old_rhel_links "$filename"
   fi
 
   # Update the counter:
@@ -520,6 +522,30 @@ function test_extarnal_links {
   done < <(echo -e "$links\n$broken" | sed '/^$/d' | sort | uniq -u )
 }
 
+# Verifies that there are no links to older RHEL documentation, including
+# a previous beta release.
+#
+# Usage: test_old_rhel_links FILE
+function test_old_rhel_links {
+  local -r filename="$1"
+
+  # Locate all external links pointing to documentation for Red Hat
+  # Enterprise Linux:
+  local -r links=$(list_links "$filename" | grep -i '://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/')
+
+  # Get a list of all links for older RHEL releases:
+  local -r wrong=$(echo "$links" | grep -ie '://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/\([1-7]\|.-beta\)/')
+
+  # Report the results for RHEL 7 links:
+  while read link; do
+    fail "Link refers to an older RHEL release: '$link'"
+  done < <(echo "$wrong" | sed '/^$/d')
+
+  # Report the results for non-problematic links:
+  while read link; do
+    pass "Link refers to the current RHEL release: '$link'"
+  done < <(echo -e "$links\n$wrong" | sed '/^$/d' | sort | uniq -u )
+}
 
 # -------------------------------------------------------------------------
 #                               MAIN SCRIPT
