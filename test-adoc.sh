@@ -559,30 +559,40 @@ function test_old_rhel_links {
 # Usage: test_leveloffsets FILE
 function test_leveloffsets {
   local -r filename="$1"
+
+  # Look for different types of include statements in the AsciiDoc file:
   (print_adoc "$filename" | grep -qP "include::[^\[]+\[leveloffset=\+1\]")
   local -r good_leveloffsets="$?"
   (print_adoc "$filename" | grep -qP "include::[^\[]+\[(?!leveloffset=\+1)")
   local -r bad_leveloffsets="$?"
   (print_adoc "$filename" | grep -qP "include::[^\[]+\[")
   local -r any_includes="$?"
-  # vars above:  zero if found, one if not found
+
+  # Determine the document type:
+  local -r type=$(detect_type "$filename")
+
+  # Produce different results for assemblies and modules:
   if [[ "$type" == 'assembly' ]] ; then
+    # Verify that the assembly contains at least one include:
     if [[ "$any_includes" -gt 0 ]] ; then
       fail "Assembly does not contain any included modules."
     else
-      pass " Assembly contains includes."
+      pass "Assembly contains includes."
     fi
-  elif [ "$type" == 'procedure' ] || [ "$type" == 'concept' ] || [ "$type" == 'reference' ] ; then # tests all modules
-    if [[ "$any_includes" -eq 0 ]] ; then
-      fail "Module contains includes."
+  elif [[ "$type" =~ ^(procedure|concept|reference|unknown)$ ]]; then
+    # Verify that modules do not contain any includes:
+    if [[ "$any_includes" -eq 0 ]]; then
+      fail "Module contains one or more includes."
     else
       pass "Module does not contain any includes."
     fi
   fi
-  if [[ "$bad_leveloffsets" -eq 0 ]]; then # test unclean leveloffsets in anything
-    fail "Found leveloffsets that don't add exactly one level."
+
+  # Report unclean leveloffsets in all document types:
+  if [[ "$bad_leveloffsets" -eq 0 ]]; then
+    fail "Found leveloffsets that do not add exactly one level."
   else
-    pass "Found no leveloffsets that don't add exactly one level."
+    pass "Found only leveloffsets that add exactly one level."
   fi
 }
 
