@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# check-db-links.sh - list broken external links in a DocBook XML file
+# test-docbk.sh - list broken external links in a DocBook XML file
 # Copyright (C) 2013, 2014 Jaromir Hradilek <jhradilek@gmail.com>
 
 # This program is  free software:  you can redistribute it and/or modify it
@@ -215,25 +215,25 @@ exit 0
 
 =head1 NAME
 
-check-db-links - list broken external links in a DocBook XML file
+test-docbk - list broken external links in a DocBook XML file
 
 =head1 SYNOPSIS
 
-B<check-db-links> [B<-acips>] I<file>
+B<test-docbk> [B<-acips>] I<file>
 
-B<check-db-links> [B<-i>] B<-l> I<file>
+B<test-docbk> [B<-i>] B<-l> I<file>
 
-B<check-db-links> B<-h>
+B<test-docbk> B<-h>
 
 =head1 DESCRIPTION
 
-The B<check-db-links> utility reads a DocBook XML file, locates all
-external links and prints a list of those that are no longer functional to
-standard output. In addition, it can be used to print all external links in
-the selected file without checking their status, or configured to perform
+The B<test-docbk> utility reads a DocBook XML file, locates all external
+links and prints a list of those that are no longer functional to standard
+output. In addition, it can be used to print all external links in the
+selected file without checking their status, or configured to perform
 XInclude processing.
 
-By default, the B<check-db-links> utility treats external links as follows:
+By default, the B<test-docbk> utility treats external links as follows:
 
 =over
 
@@ -261,7 +261,7 @@ below.
 Prints the current status of all external links, that is, B<PASSED> for
 links that are functional, B<FAILED> for links that appear to be broken,
 and B<IGNORED> for links that are explicitly ignored (typically email
-addresses). By default, the B<check-db-links> utility prints only broken
+addresses). By default, the B<test-docbk> utility prints only broken
 links.
 
 =item B<-c>
@@ -270,7 +270,7 @@ Enables colored output.
 
 =item B<-i>
 
-Performs XInclude processing. By default, the B<check-db-links> utility
+Performs XInclude processing. By default, the B<test-docbk> utility
 checks only those links that are present in the selected file. With this
 option, the utility also checks links in files that are included in the
 selected file by using the B<E<lt>xi:includeE<gt>> statement.
@@ -283,7 +283,7 @@ This option can be used in conjunction with the B<-i> option.
 =item B<-p>
 
 Checks the current status of external links in parallel. By default, the
-B<check-db-links> utility checks external links one at a time.
+B<test-docbk> utility checks external links one at a time.
 
 =item B<-h>
 
@@ -300,28 +300,28 @@ Displays usage information and exits.
 To list all broken links in a selected DocBook XML file, type the following
 at a shell prompt:
 
-    check-db-links FILE
+    test-docbk FILE
 
 =item *
 
 To list all links in a selected DocBook XML file along with their current
 status (B<PASSED>, B<FAILED>, or B<IGNORED>), run the following command:
 
-    check-db-links -a FILE
+    test-docbk -a FILE
 
 =item *
 
 To list all links in a selected DocBook XML file without checking their
 status, type:
 
-    check-db-links -l FILE
+    test-docbk -l FILE
 
 =item *
 
 To list all broken links in a selected DocBook XML file and all files that
 are included in it using the B<E<lt>xi:includeE<gt>> statement, run:
 
-    check-db-links -i FILE
+    test-docbk -i FILE
 
 =back
 
