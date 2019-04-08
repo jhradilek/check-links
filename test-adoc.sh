@@ -31,6 +31,7 @@ declare -i FILES=0
 # Command line options:
 declare -i OPT_VERBOSITY=0
 declare -i OPT_INCLUDES=0
+declare -i OPT_LINKS=0
 
 
 # -------------------------------------------------------------------------
@@ -504,6 +505,10 @@ function test_replaced_projects {
 function test_extarnal_links {
   local -r filename="$1"
 
+  # Verify that the link testing is enabled as this slows down the script
+  # significantly:
+  [[ "$OPT_LINKS" -gt 0 ]] || return
+
   # Locate all external links used in the AsciiDoc file:
   local -r links=$(list_links "$filename")
 
@@ -552,13 +557,14 @@ function test_old_rhel_links {
 # -------------------------------------------------------------------------
 
 # Process command-line options:
-while getopts ':hivV' OPTION; do
+while getopts ':hilvV' OPTION; do
   case "$OPTION" in
     h)
       # Print usage information to standard output:
       echo "Usage: $NAME [-iv] FILE..."
       echo -e "       $NAME -hV\n"
       echo '  -i           also test included files'
+      echo '  -l           test external links (slow)'
       echo '  -v           include successful test results in the report'
       echo '  -h           display this help and exit'
       echo '  -V           display version and exit'
@@ -569,6 +575,10 @@ while getopts ':hivV' OPTION; do
     i)
       # Enable processing of included files:
       OPT_INCLUDES=1
+      ;;
+    l)
+      # Enable testing of external links:
+      OPT_LINKS=1
       ;;
     v)
       # Increase the verbosity level:
