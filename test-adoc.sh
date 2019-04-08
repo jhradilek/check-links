@@ -564,14 +564,20 @@ function test_leveloffsets {
   if [[ "$type" == 'assembly' ]] ; then
     if [[ "$any_includes" -gt 0 ]] ; then
       fail "Assembly does not contain any included modules."
+    else
+      pass " Assembly contains includes."
     fi
   elif [ "$type" == 'procedure' ] || [ "$type" == 'concept' ] || [ "$type" == 'reference' ] ; then # tests all modules
     if [[ "$any_includes" -eq 0 ]] ; then
       fail "Module contains includes."
+    else
+      pass "Module does not contain any includes."
     fi
   fi
   if [[ "$bad_leveloffsets" -eq 0 ]]; then # test unclean leveloffsets in anything
     fail "Found leveloffsets that don't add exactly one level."
+  else
+    pass "Found no leveloffsets that don't add exactly one level."
   fi
 }
 
