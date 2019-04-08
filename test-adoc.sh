@@ -153,9 +153,9 @@ document.reader.includes.each { |filename|
 }
 EOF
 
-  # Verify that the AsciiDoc file could be processed and report warning
+  # Verify that the AsciiDoc file could be processed and print a warning
   # if it could not:
-  [[ "$?" -eq 0 ]] || warn "$file: Unable to list included files"
+  [[ "$?" -eq 0 ]] || warn "$filename: Unable to list included files"
 }
 
 # Processes the supplied AsciiDoc file and reports problems to standard
@@ -197,6 +197,7 @@ function print_report {
     test_internal_definition "$filename"
     test_rhel_in_headings "$filename"
     test_replaced_projects "$filename"
+    test_extarnal_links "$filename"
   else
     # Run test cases for modules and assemblies:
     test_internal_definition "$filename"
@@ -207,6 +208,7 @@ function print_report {
     test_context_in_ids "$filename"
     test_rhel_in_headings "$filename"
     test_replaced_projects "$filename"
+    test_extarnal_links "$filename"
   fi
 
   # Update the counter:
@@ -244,6 +246,46 @@ function list_headings {
 
   # Parse headings:
   print_adoc "$filename" | sed -ne "s/^=\+ \+\(.*\)$/\1/p"
+}
+
+# Parses the AsciiDoc file and prints all external links to standard
+# output.
+#
+# Usage: list_links FILE
+function list_links {
+  local -r filename="$1"
+
+  # Convert the AsciiDoc file to DocBook 4.5 and store the output in a
+  # variable:
+  local -r docbook=$(asciidoctor -S secure -b docbook45 -o - "$filename" 2>/dev/null)
+
+  # Verify that the AsciiDoc file could be converted and print a warning
+  # if it could not:
+  if [[ "$?" -gt 0 ]]; then
+    warn "$filename: Unable to convert to DocBook 4.5"
+    return 1
+  fi
+
+  # Parse the DocBook 4.5 output and print all external links to standard
+  # output:
+  echo "$docbook" | \
+    xmlstarlet sel -t -v '//ulink/@url' 2>/dev/null | \
+    grep -e '^https\?://' | \
+    sort -u | sed '/^$/d'
+}
+
+# Determines whether an external link is functional. If the target URL is
+# not accessible, the function prints the broken link to standard output.
+#
+# Usage: print_broken URL
+function print_broken {
+  local -r url="$1"
+
+  # Verify whether the supplied link is accessible:
+  curl -A 'Mozilla/5.0 (X11; Fedora; Linux x86_64; rv:65.0) Gecko/20100101 Firefox/65.0' \
+       --connect-timeout 5 --retry 3 \
+       -4ILfks "$url" &>/dev/null \
+    || echo "$url"
 }
 
 # Parses the AsciiDoc file and determines whether it contains any steps.
@@ -454,6 +496,30 @@ function test_replaced_projects {
   done
 }
 
+# Verifies that all external links are functional.
+#
+# Usage: test_external_links FILE
+function test_extarnal_links {
+  local -r filename="$1"
+
+  # Locate all external links used in the AsciiDoc file:
+  local -r links=$(list_links "$filename")
+
+  # Get a list of all broken links:
+  export -f print_broken
+  local -r broken=$(echo "$links" | xargs -n 1 -P 0 bash -c 'print_broken "$@"' --)
+
+  # Report the results for broken links:
+  while read link; do
+    fail "Link is broken: '$link'"
+  done < <(echo "$broken" | sed '/^$/d')
+
+  # Report the results for functional links:
+  while read link; do
+    pass "Link is functional: '$link'"
+  done < <(echo -e "$links\n$broken" | sed '/^$/d' | sort | uniq -u )
+}
+
 
 # -------------------------------------------------------------------------
 #                               MAIN SCRIPT
@@ -503,7 +569,7 @@ shift $(($OPTIND - 1))
 [[ "$#" -gt 0 ]] || exit_with_error 'Invalid number of arguments' 22
 
 # Verify that all required utilities are present in the system:
-for dependency in curl asciidoctor; do
+for dependency in asciidoctor curl xmlstarlet; do
   if ! type "$dependency" &>/dev/null; then
     exit_with_error "Missing dependency -- '$dependency'" 1
   fi
