@@ -606,7 +606,7 @@ while getopts ':hilvV' OPTION; do
   case "$OPTION" in
     h)
       # Print usage information to standard output:
-      echo "Usage: $NAME [-iv] FILE..."
+      echo "Usage: $NAME [-ilv] FILE..."
       echo -e "       $NAME -hV\n"
       echo '  -i           also test included files'
       echo '  -l           test external links (slow)'
@@ -675,3 +675,99 @@ print_summary
 
 # Terminate the script:
 [[ "$ISSUES" -eq 0 ]] && exit 0 || exit 1
+
+# Manual page:
+:<<-=cut
+
+=head1 NAME
+
+test-adoc - test an AsciiDoc file and report possible issues
+
+=head1 SYNOPSIS
+
+B<test-adoc> [B<-ilv>] I<file>...
+
+B<test-adoc> B<-hV>
+
+=head1 DESCRIPTION
+
+The B<test-adoc> utility reads one or more AsciiDoc files, runs a series of
+test cases on them, and prints the test results to standard output.
+
+=head1 OPTIONS
+
+=over
+
+=item B<-i>
+
+Enables processing of included files. By default, the script only reads
+AsciiDoc files supplied on the command line.
+
+=item B<-l>
+
+Enables testing of external links. As verifying that all external links in
+a large number of AsciiDoc files can be slow, this functionality is
+disabled by default.
+
+=item B<-v>
+
+Includes successful test results in the report. By default, the script only
+reports failed tests.
+
+=item B<-h>
+
+Displays usage information and terminates the script.
+
+=item B<-V>
+
+Displays the script version and terminates the script.
+
+=back
+
+=head1 EXAMPLES
+
+=over
+
+=item *
+
+To test a single AsciiDoc module named I<my_module.adoc>, include broken
+links in the report, and include successful test results in the output,
+type the following command at a shell prompt:
+
+    test-adoc -lv my_module.adoc
+
+=item *
+
+To test all AsciiDoc modules in the current working directory without
+looking for broken links or printing successful test results, type:
+
+    test-adoc *.adoc
+
+=item *
+
+To test I<master.adoc> and all assemblies and modules included in this
+file, type:
+
+    test-adoc -i master.adoc
+
+=back
+
+=head1 SEE ALSO
+
+B<asciidoctor>(1), B<curl>(1), B<xmlstarlet>(1)
+
+=head1 BUGS
+
+To report a bug or submit a patch, please visit
+L<https://github.com/jhradilek/check-links/>.
+
+=head1 COPYRIGHT
+
+Copyright (C) 2013, 2014, 2019 Jaromir Hradilek E<lt>jhradilek@gmail.comE<gt>
+
+This program is free software; see the source for copying conditions. It is
+distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE.
+
+=cut
