@@ -613,7 +613,7 @@ function test_module_headings {
   if [[ "$num_headings" -eq 0 ]]; then
     fail "Module does not have any heading."
   elif [[ "$num_headings" -eq 1 ]]; then
-    pass "Module has exactly one heading"
+    pass "Module has exactly one heading."
   elif [[ "$num_headings" -gt 1 ]]; then
     fail "Module has more than one heading."
   fi
