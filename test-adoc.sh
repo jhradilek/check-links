@@ -213,6 +213,7 @@ function print_report {
     test_extarnal_links "$filename"
     test_old_rhel_links "$filename"
     test_leveloffsets "$filename"
+    test_module_headings "$filename"
   fi
 
   # Update the counter:
@@ -593,6 +594,26 @@ function test_leveloffsets {
     fail "Found leveloffsets that do not add exactly one level."
   else
     pass "Found only leveloffsets that add exactly one level."
+  fi
+}
+
+
+# Verifies that there is exactly one non-[discrete] heading in the module.
+#
+# Usage: test_module_headings FILE
+function test_module_headings {
+  if [[ "$type" == 'assembly' ]] ; then
+    return 0 # check only modules
+  fi
+  local -r filename="$1"
+  local -r num_headings=$(print_adoc "$filename" | perl -pe 's/\[discrete\][\n\r]+/removed-discrete-heading-endline/g' | grep -oP '^[\n\r]*=+[\s]+[^\s]+.+' | wc -l)
+  # explanation: 1. change all [discrete]+newline into text, thus making them into text=== heading form 2. count the actual headings after that
+  if [[ "$num_headings" -eq 0 ]]; then
+    fail "Module does not have any heading."
+  elif [[ "$num_headings" -eq 1 ]]; then
+    pass "Module has exactly one heading"
+  elif [[ "$num_headings" -gt 1 ]]; then
+    fail "Module has more than one heading."
   fi
 }
 
