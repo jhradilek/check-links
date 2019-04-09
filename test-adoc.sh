@@ -602,10 +602,12 @@ function test_leveloffsets {
 #
 # Usage: test_module_headings FILE
 function test_module_headings {
+  local -r filename="$1"
+
+  local -r type=$(detect_type "$filename")
   if [[ "$type" == 'assembly' ]] ; then
     return 0 # check only modules
   fi
-  local -r filename="$1"
   local -r num_headings=$(print_adoc "$filename" | perl -pe 's/\[discrete\][\n\r]+/removed-discrete-heading-endline/g' | grep -oP '^[\n\r]*=+[\s]+[^\s]+.+' | wc -l)
   # explanation: 1. change all [discrete]+newline into text, thus making them into text=== heading form 2. count the actual headings after that
   if [[ "$num_headings" -eq 0 ]]; then
