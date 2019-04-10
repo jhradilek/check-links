@@ -200,6 +200,7 @@ function print_report {
     test_replaced_projects "$filename"
     test_extarnal_links "$filename"
     test_old_rhel_links "$filename"
+    test_preview_links "$filename"
   else
     # Run test cases for modules and assemblies:
     test_internal_definition "$filename"
@@ -212,6 +213,7 @@ function print_report {
     test_replaced_projects "$filename"
     test_extarnal_links "$filename"
     test_old_rhel_links "$filename"
+    test_preview_links "$filename"
     test_leveloffsets "$filename"
     test_module_headings "$filename"
   fi
@@ -551,6 +553,29 @@ function test_old_rhel_links {
   # Report the results for non-problematic links:
   while read link; do
     pass "Link refers to the current RHEL release: '$link'"
+  done < <(echo -e "$links\n$wrong" | sed '/^$/d' | sort | uniq -u )
+}
+
+# Verifies that there are no links to internal previews.
+#
+# Usage: test_preview_links FILE
+function test_preview_links {
+  local -r filename="$1"
+
+  # Locate all external links pointing to Red Hat product documentation:
+  local -r links=$(list_links "$filename" | grep -i '://access.redhat.com/documentation/')
+
+  # Get a list of all preview links:
+  local -r wrong=$(echo "$links" | grep -e 'lb_target=\(stage\|preview\)')
+
+  # Report the results for preview links:
+  while read link; do
+    fail "Link refers to a preview build: '$link'"
+  done < <(echo "$wrong" | sed '/^$/d')
+
+  # Report the results for non-problematic links:
+  while read link; do
+    pass "Link does not refer to a preview build: '$link'"
   done < <(echo -e "$links\n$wrong" | sed '/^$/d' | sort | uniq -u )
 }
 
