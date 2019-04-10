@@ -543,7 +543,7 @@ function test_old_rhel_links {
   local -r links=$(list_links "$filename" | grep -i '://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/')
 
   # Get a list of all links for older RHEL releases:
-  local -r wrong=$(echo "$links" | grep -ie '://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/\([1-7]\|.-beta\)/')
+  local -r wrong=$(echo "$links" | grep -ie '://access\.redhat\.com/documentation/en-us/red_hat_enterprise_linux/\([1-7]\|.-beta\)/')
 
   # Report the results for RHEL 7 links:
   while read link; do
@@ -563,10 +563,10 @@ function test_preview_links {
   local -r filename="$1"
 
   # Locate all external links pointing to Red Hat product documentation:
-  local -r links=$(list_links "$filename" | grep -i '://access.redhat.com/documentation/')
+  local -r links=$(list_links "$filename" | grep -i '://access\.\(qa\.\|\)redhat\.com/documentation/')
 
   # Get a list of all preview links:
-  local -r wrong=$(echo "$links" | grep -e 'lb_target=\(stage\|preview\)')
+  local -r wrong=$(echo "$links" | grep -e 'access\.qa\.redhat\.com\|lb_target=\(stage\|preview\)')
 
   # Report the results for preview links:
   while read link; do
