@@ -566,7 +566,7 @@ function test_preview_links {
   local -r links=$(list_links "$filename" | grep -i '://[^/]\+\.redhat\.com/documentation/')
 
   # Get a list of all preview links:
-  local -r wrong=$(echo "$links" | sed -ne '/lb_target=stage/p;/access\.redhat\.com/!p')
+  local -r wrong=$(echo "$links" | sed -ne '/lb_target=\(stage\|preview\)/p;/access\.redhat\.com/!p')
 
   # Report the results for preview links:
   while read link; do
