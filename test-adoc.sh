@@ -145,12 +145,12 @@ function print_includes {
 #!/usr/bin/env ruby
 
 require 'asciidoctor'
-require 'pathname'
 
 document = Asciidoctor.load_file("$filename", doctype: :book, safe: :safe)
 document.reader.includes.each { |filename|
-  path = Pathname.new("#{filename}.adoc")
-  puts path.realpath
+  dirname  = File.dirname("$filename")
+  fullpath = File.join(dirname, "#{filename}.adoc")
+  puts File.realpath(fullpath)
 }
 EOF
 
