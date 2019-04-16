@@ -117,6 +117,7 @@ function detect_type {
     assembly_*) echo 'assembly';;
     master.adoc) echo 'master';;
     local-attributes.adoc|attributes.adoc) echo 'attributes';;
+    master-docinfo.xml|docinfo.xml) echo 'docinfo';;
     *) echo 'unknown';;
   esac
 }
@@ -166,9 +167,6 @@ EOF
 function print_report {
   local -r filename="$1"
 
-  # Verify that the supplied file is an AsciiDoc file:
-  [[ "${file##*.}" == 'adoc' ]] || exit_with_error "$file: Not an AsciiDoc file" 22
-
   # Verify that the supplied file exists and is readable:
   [[ -e "$file" ]] || exit_with_error "$file: No such file or directory" 2
   [[ -r "$file" ]] || exit_with_error "$file: Permission denied" 13
@@ -176,6 +174,11 @@ function print_report {
 
   # Determine the document type:
   local -r type=$(detect_type "$filename")
+
+  # Verify that the supplied file is either an AsciiDoc file, or a docinfo
+  # file:
+  [[ "${file##*.}" == 'adoc' ]] || [[ "$type" == 'docinfo' ]] || \
+    exit_with_error "$file: Not an AsciiDoc file" 22
 
   # Get the full path for the tested file:
   local -r fullpath=$(realpath "$filename")
@@ -187,7 +190,10 @@ function print_report {
   # Run test cases depending on the detected document type. If the document
   # type could not be determined, treat the file just like a module or
   # assembly:
-  if [[ "$type" == 'attributes' ]]; then
+  if [[ "$type" == 'docinfo' ]]; then
+    # Run test cases for docinfo XML files:
+    test_docinfo_abstract "$filename"
+  elif [[ "$type" == 'attributes' ]]; then
     # Run test cases for attribute definition files:
     test_attributes_location "$filename"
     test_internal_definition "$filename"
@@ -303,6 +309,23 @@ function has_steps {
 
   # Parse steps:
   print_adoc "$filename" | grep -qP '^\.+\s+\S+'
+}
+
+# Verifies that the docinfo XML file includes a <para> within <abstract>.
+#
+# Usage: test_docinfo_abstract FILE
+function test_docinfo_abstract {
+  local -r filename="$1"
+
+  # Read the content of the <para> tag inside of <abstract>:
+  local -r abstract=$(sed -e '1s/^/<x>\n/;$ s/$/\n<\/x>/' "$filename" | xmlstarlet sel -t -v '/x/abstract/para' 2>/dev/null)
+
+  # Check whether the content is a non-empty string and report the result:
+  if [[ ! -z "$abstract" ]]; then
+    pass "The abstract includes the <para> tag."
+  else
+    fail "The abstract does not include the <para> tag."
+  fi
 }
 
 # Verifies that all attribute definitions are stored in the
@@ -709,8 +732,9 @@ for file in "$@"; do
   # Process the file and print the report:
   print_report "$file"
 
-  # Check whether to also process included files:
-  if [[ "$OPT_INCLUDES" -gt 0 ]]; then
+  # Check whether to also process included files provided the file is an
+  # AsciiDoc file:
+  if [[ "$file" == *.adoc ]] && [[ "$OPT_INCLUDES" -gt 0 ]]; then
     # Process each included file and print the report for it:
     while read include; do
       print_report "$include"
