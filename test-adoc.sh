@@ -193,6 +193,7 @@ function print_report {
   if [[ "$type" == 'docinfo' ]]; then
     # Run test cases for docinfo XML files:
     test_docinfo_abstract "$filename"
+    test_docinfo_name "$filename"
   elif [[ "$type" == 'attributes' ]]; then
     # Run test cases for attribute definition files:
     test_attributes_location "$filename"
@@ -325,6 +326,20 @@ function test_docinfo_abstract {
     pass "The abstract includes the <para> tag."
   else
     fail "The abstract does not include the <para> tag."
+  fi
+}
+
+# Verify that the docinfo XML file is named docinfo.xml.
+#
+# Usage: test_docinfo_name FILE
+function test_docinfo_name {
+  local -r filename="${1##*/}"
+
+  # Check the file name and report the result:
+  if [[ "$filename" == "docinfo.xml" ]]; then
+    pass "The file name is 'docinfo.xml'."
+  else
+    fail "The file name is not 'docinfo.xml'."
   fi
 }
 
