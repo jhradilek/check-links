@@ -25,6 +25,7 @@ declare -r VERSION='0.0.1'
 
 # Counters for tested items:
 declare -i ISSUES=0
+declare -i NOTES=0
 declare -i CHECKED=0
 declare -i FILES=0
 
@@ -97,8 +98,23 @@ function fail {
   (( CHECKED++ ))
   (( ISSUES++ ))
 
-  # Raport a failed test:
+  # Report a failed test:
   print_test_result "fail" "$explanation"
+}
+
+# Records a test as passed but prints a message to standard output to
+# report a possible problem.
+#
+# Usage: note EXPLANATION
+function note {
+  local -r explanation="$1"
+
+  # Update the counters:
+  (( CHECKED++ ))
+  (( NOTES++))
+
+  # Report a possible problem:
+  print_test_result "note" "$explanation"
 }
 
 # Deduces the documentat type from the file name and prints the result to
@@ -450,7 +466,7 @@ function test_steps_in_con {
     if ! has_steps "$filename"; then
       pass "The concept module does not contain any steps."
     else
-      fail "The concept module contains one or more steps."
+      note "The concept module contains one or more steps."
     fi
   fi
 }
@@ -471,7 +487,7 @@ function test_steps_in_ref {
     if ! has_steps "$filename"; then
       pass "The reference module does not contain any steps."
     else
-      fail "The reference module contains one or more steps."
+      note "The reference module contains one or more steps."
     fi
   fi
 }
