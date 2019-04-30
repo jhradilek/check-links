@@ -371,7 +371,7 @@ function test_attributes_location {
   if [[ "$filename" == */meta/attributes.adoc ]]; then
     pass "Attribute definitions are stored in meta/attributes.adoc."
   else
-    fail "Attribute definitions belong to meta/attributes.adoc to enable reuse."
+    note "Attribute definitions belong to meta/attributes.adoc to enable reuse."
   fi
 }
 
