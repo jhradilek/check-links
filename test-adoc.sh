@@ -222,6 +222,7 @@ function print_report {
     test_rhel_in_headings "$filename"
     test_replaced_projects "$filename"
     test_extarnal_links "$filename"
+    test_old_title_links "$filename"
     test_old_rhel_links "$filename"
     test_preview_links "$filename"
   else
@@ -235,6 +236,7 @@ function print_report {
     test_rhel_in_headings "$filename"
     test_replaced_projects "$filename"
     test_extarnal_links "$filename"
+    test_old_title_links "$filename"
     test_old_rhel_links "$filename"
     test_preview_links "$filename"
     test_leveloffsets "$filename"
@@ -599,7 +601,7 @@ function test_old_rhel_links {
   # Get a list of all links for older RHEL releases:
   local -r wrong=$(echo "$links" | grep -ie '://access\.redhat\.com/documentation/en-us/red_hat_enterprise_linux/\([1-7]\|.-beta\)/')
 
-  # Report the results for RHEL 7 links:
+  # Report the results for problematic links:
   while read link; do
     fail "Link refers to an older RHEL release: '$link'"
   done < <(echo "$wrong" | sed '/^$/d')
@@ -608,6 +610,42 @@ function test_old_rhel_links {
   while read link; do
     pass "Link refers to the current RHEL release: '$link'"
   done < <(echo -e "$links\n$wrong" | sed '/^$/d' | sort | uniq -u )
+}
+
+# Verifies that there are no links to removed or renamed titles.
+#
+# Usage: test_old_title_links FILE
+function test_old_title_links {
+  local -r filename="$1"
+
+  # Define a glossary of old and new title fragments:
+  local -A titles
+  titles['comparing_rhel_8_to_rhel_7']='considerations_in_adopting_rhel_8'
+  titles['comparing-rhel-8-to-rhel-7']='considerations-in-adopting-rhel-8'
+
+  # Locate all external links pointing to documentation for Red Hat
+  # Enterprise Linux:
+  local -r links=$(list_links "$filename" | grep -i '://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/')
+
+  # Stop here if there are no documentation links:
+  [[ -z "$links" ]] && return
+
+  # Iterate over title fragments:
+  for fragment in "${!titles[@]}"; do
+    # Get a list of all links containing the old URL fragment:
+    local wrong=$(echo "$links" | grep "$fragment")
+
+    # Determine if there were any problematic links:
+    if [[ -z "$wrong" ]]; then
+      # Report the result for non-problematic links:
+      pass "Links do not refer to deprecated title '$fragment'."
+    else
+      # Report the results for problematic links:
+      while read link; do
+        fail "Link refers to a deprecated title: '$link'. Use '${titles[$fragment]}' instead."
+      done < <(echo "$wrong" | sed '/^$/d')
+    fi
+  done
 }
 
 # Verifies that there are no links to internal previews.
