@@ -241,6 +241,7 @@ function print_report {
     test_preview_links "$filename"
     test_leveloffsets "$filename"
     test_module_headings "$filename"
+    test_yum_y "$filename"
   fi
 
   # Update the counter:
@@ -733,6 +734,23 @@ function test_module_headings {
     pass "Module has exactly one heading."
   elif [[ "$num_headings" -gt 1 ]]; then
     fail "Module has more than one heading."
+  fi
+}
+
+
+# Verifies that there are no dangerous  yum (...) -y commands.
+#
+# Usage: test_yum_y FILE
+function test_yum_y {
+  local -r filename="$1"
+
+  (print_adoc "$filename" | grep -qP "yum[\s\w-@=\$\*]*[\s]-y")
+  local -r has_yum_y="$?"
+
+  if [[ "$has_yum_y" -eq 0 ]]; then
+    fail "Found dangerous command 'yum (...) -y'."
+  else
+    pass "Found no dangerous commands 'yum (...) -y'."
   fi
 }
 
